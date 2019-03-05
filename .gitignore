@@ -1,0 +1,6 @@
+*.pyc
+__pycache__
+build
+dist
+MANIFEST
+.tufts_courses_cookie_PS_TOKEN
