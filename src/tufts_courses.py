@@ -56,7 +56,7 @@ def fetchPSTOKEN():
 
 
 def getPSTOKEN(mode=""):
-    """Returns a PS_wTOKEN (required for requests)
+    """Returns a PS_TOKEN (required for requests)
        The returned PS_TOKEN is cached in a local file
 
     Keyword Arguments:
@@ -109,9 +109,7 @@ def courseEndpoint(func):
     """
 
     def sendRequest(*args, **kwargs):
-        # Use param dictionary as query string
         querystring = func(*args, **kwargs)
-        # Get url from endpoint dicitonary
         url = BASE_URL + endpoints[func.__name__]
 
         try:
