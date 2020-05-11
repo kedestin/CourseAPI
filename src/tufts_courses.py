@@ -6,25 +6,20 @@ import json
 import inspect
 from pathlib import Path
 
-
-BASE_URL = "https://siscs.uit.tufts.edu/"
+BASE_URL = (
+    "https://siscs.uit.tufts.edu/psc/csprd/EMPLOYEE/HRMS/s/"
+    "WEBLIB_CLS_SRCH.ISCRIPT1.FieldFormula."
+)
 
 """SIS course search api endpoints
 """
 endpoints = {
-    "getCareer":     ("psc/csprod/EMPLOYEE/HRMS/s/WEBLIB_CLS_SRCH.ISCRIPT1."
-                      "FieldFormula.IScript_getCareers"),
-    "getSubjects":   ("psc/csprod/EMPLOYEE/HRMS/s/WEBLIB_CLS_SRCH.ISCRIPT1."
-                      "FieldFormula.IScript_getSubjects"),
-    "getAttributes": ("psc/csprod/EMPLOYEE/HRMS/s/WEBLIB_CLS_SRCH.ISCRIPT1."
-                      "FieldFormula.IScript_getAttributes"),
-    "getCourseNumbers":  ("psc/csprod/EMPLOYEE/HRMS/s/WEBLIB_CLS_SRCH.ISCRIPT1."
-                      "FieldFormula.IScript_getCourseNumbers"),
-    "getTerms":      ("psc/csprod/EMPLOYEE/HRMS/s/WEBLIB_CLS_SRCH.ISCRIPT1."
-                      "FieldFormula.IScript_getTerms"),
-    "performSearch": ("psc/csprod/EMPLOYEE/HRMS/s/WEBLIB_CLS_SRCH.ISCRIPT1."
-                      "FieldFormula.IScript_getSearchresultsAll3")
-
+    "getCareer": "IScript_getCareers",
+    "getSubjects": "IScript_getSubjects",
+    "getAttributes": "IScript_getAttributes",
+    "getCourseNumbers": "IScript_getCourseNumbers",
+    "getTerms": "IScript_getTerms",
+    "performSearch": "IScript_getSearchresultsAll3"
 }
 
 
@@ -37,7 +32,7 @@ def cookiefy(cookie):
     Returns:
         str -- stringified cookie
     """
-    return "; ".join([str(x)+"="+str(y) for x, y in cookie.items()])
+    return "; ".join([str(x) + "=" + str(y) for x, y in cookie.items()])
 
 
 def fetchPSTOKEN():
@@ -47,8 +42,10 @@ def fetchPSTOKEN():
         str -- PS_TOKEN
     """
     # This page's response tells the browser to set the PS_TOKEN cookie
-    url = ("https://sis.uit.tufts.edu/psp/paprod/EMPLOYEE/EMPL/h/"
-           "?tab=PAPP_GUEST")
+    url = (
+        "https://sis.uit.tufts.edu/psp/paprod/EMPLOYEE/EMPL/h/"
+        "?tab=PAPP_GUEST"
+    )
 
     session = requests.Session()
     session.get(url)
@@ -94,8 +91,6 @@ cookie = {
     "PS_TOKEN": getPSTOKEN(),
     "ExpirePage": "https://sis.uit.tufts.edu/psp/paprod/"
 }
-
-
 """Request headers
 """
 headers = {
@@ -107,22 +102,23 @@ headers = {
 def courseEndpoint(func):
     """Decorator that wraps each endpoint with the request logic
     """
-
     def sendRequest(*args, **kwargs):
         querystring = func(*args, **kwargs)
         url = BASE_URL + endpoints[func.__name__]
 
         try:
-            return requests.get(url, headers=headers, params=querystring).json()
+            return requests.get(url, headers=headers,
+                                params=querystring).json()
 
         except json.decoder.JSONDecodeError:  # If request is malformed,
-                                              # an html page is returned
+            # an html page is returned
 
             # Retry request with a new token from the web
             cookie["PS_TOKEN"] = getPSTOKEN("bypassCache")
-            headers["Cookie"]  = cookiefy(cookie)
+            headers["Cookie"] = cookiefy(cookie)
+            return requests.get(url, headers=headers,
+                                params=querystring).json()
 
-            return requests.get(url, headers=headers, params=querystring).json()
     return sendRequest
 
 
@@ -194,8 +190,16 @@ def getTerms(career):
 
 
 @courseEndpoint
-def performSearch(term, career="", subject="", crs_number="", attribute="",
-                  keyword="", instructor="", searchby="crs_number"):
+def performSearch(
+    term,
+    career="",
+    subject="",
+    crs_number="",
+    attribute="",
+    keyword="",
+    instructor="",
+    searchby="crs_number"
+):
     """Performs a search given provided criteria
 
     Arguments:
